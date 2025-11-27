@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AgriSense{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white text-center mb-2">
+            <i class="fas fa-leaf"></i> Welcome to AgriSense, {{ username }}!
+        </h1>
+        <p class="text-white text-center">Choose a tool to get started with smart agriculture</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Crop Recommendation Card -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-seedling fa-4x text-success"></i>
+                </div>
+                <h5 class="card-title">Crop Recommendation</h5>
+                <p class="card-text text-muted">
+                    Get personalized crop suggestions based on soil nutrients and climate conditions
+                </p>
+                <a href="{{ url_for('crop_recommendation') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Start
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crop Yield Prediction Card -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-4x text-primary"></i>
+                </div>
+                <h5 class="card-title">Yield Prediction</h5>
+                <p class="card-text text-muted">
+                    Predict crop yield based on location, season, and cultivation area
+                </p>
+                <a href="{{ url_for('crop_yield') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Start
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plant Disease Detection Card -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-bug fa-4x text-danger"></i>
+                </div>
+                <h5 class="card-title">Disease Detection</h5>
+                <p class="card-text text-muted">
+                    Identify plant diseases from leaf images using AI-powered analysis
+                </p>
+                <a href="{{ url_for('plant_disease') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Start
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soil Type Analysis Card -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-mountain fa-4x text-warning"></i>
+                </div>
+                <h5 class="card-title">Soil Analysis</h5>
+                <p class="card-text text-muted">
+                    Analyze soil type and get irrigation recommendations from soil images
+                </p>
+                <a href="{{ url_for('soil_type') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Start
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-info"></i> About AgriSense
+                </h5>
+                <p class="card-text">
+                    AgriSense is a comprehensive smart agriculture platform that combines multiple AI-powered tools 
+                    to help farmers make informed decisions. Our platform provides:
+                </p>
+                <ul>
+                    <li><strong>Crop Recommendation:</strong> AI-based suggestions for the best crops to grow based on your soil and climate</li>
+                    <li><strong>Yield Prediction:</strong> Accurate forecasts of crop production to help with planning</li>
+                    <li><strong>Disease Detection:</strong> Early identification of plant diseases to prevent crop loss</li>
+                    <li><strong>Soil Analysis:</strong> Detailed soil type identification with customized irrigation advice</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

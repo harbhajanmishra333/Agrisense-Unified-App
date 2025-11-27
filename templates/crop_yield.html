@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Crop Yield Prediction - AgriSense{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-chart-line"></i> Crop Yield Prediction
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Predict crop yield based on location, season, crop type, and cultivation area.
+                </p>
+
+                <form id="yieldForm">
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label for="State" class="form-label">State</label>
+                            <select class="form-select" id="State" name="State" required>
+                                <option value="">Select State</option>
+                                {% for state in categories.get('State', []) %}
+                                <option value="{{ state }}">{{ state }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="District" class="form-label">District</label>
+                            <select class="form-select" id="District" name="District" required>
+                                <option value="">Select District</option>
+                                {% for district in categories.get('District', []) %}
+                                <option value="{{ district }}">{{ district }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Season" class="form-label">Season</label>
+                            <select class="form-select" id="Season" name="Season" required>
+                                <option value="">Select Season</option>
+                                {% for season in categories.get('Season', []) %}
+                                <option value="{{ season }}">{{ season }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Crop" class="form-label">Crop</label>
+                            <select class="form-select" id="Crop" name="Crop" required>
+                                <option value="">Select Crop</option>
+                                {% for crop in categories.get('Crop', []) %}
+                                <option value="{{ crop }}">{{ crop }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Crop_Year" class="form-label">Crop Year</label>
+                            <input type="number" class="form-control" id="Crop_Year" name="Crop_Year" min="1990" max="2030" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Area" class="form-label">Area (hectares)</label>
+                            <input type="number" class="form-control" id="Area" name="Area" step="0.01" min="0" required>
+                        </div>
+
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-calculator"></i> Predict Yield
+                        </button>
+                    </div>
+                </form>
+
+                <div id="loading" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Calculating yield prediction...</p>
+                </div>
+
+                <div id="result" class="mt-4" style="display: none;">
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-chart-bar"></i> Predicted Yield</h5>
+                        <h3 class="mb-2"><span id="prediction"></span> tons/hectare</h3>
+
+                        <h6>Confidence</h6>
+                        <p id="confidence"></p>
+
+                        <h6>Factors</h6>
+                        <ul id="factors"></ul>
+
+                        <h6>Recommendations</h6>
+                        <ul id="recommendations"></ul>
+                    </div>
+                </div>
+
+                <div id="error" class="mt-4" style="display: none;">
+                    <div class="alert alert-danger">
+                        <span id="errorMsg"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('yieldForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+
+    submitBtn.disabled = true;
+    loading.style.display = 'block';
+    result.style.display = 'none';
+    error.style.display = 'none';
+
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/predict-yield', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const p = data.prediction;
+
+            document.getElementById('prediction').textContent = p.estimated_yield;
+            document.getElementById('confidence').textContent = p.confidence;
+
+            document.getElementById('factors').innerHTML = p.factors.map(f => `<li>${f}</li>`).join('');
+            document.getElementById('recommendations').innerHTML = p.recommendations.map(r => `<li>${r}</li>`).join('');
+
+            result.style.display = 'block';
+        } else {
+            document.getElementById('errorMsg').textContent = data.error;
+            error.style.display = 'block';
+        }
+
+    } catch (err) {
+        document.getElementById('errorMsg').textContent = 'Network error. Please try again.';
+        error.style.display = 'block';
+    } finally {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Crop Recommendation - AgriSense{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-seedling"></i> Crop Recommendation System
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Enter soil nutrient values and environmental conditions to get personalized crop recommendations.
+                </p>
+
+                <form id="cropForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="N" class="form-label">Nitrogen (N)</label>
+                            <input type="number" class="form-control" id="N" name="N" step="any" required>
+                            <small class="text-muted">Nitrogen content in soil (kg/ha)</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="P" class="form-label">Phosphorus (P)</label>
+                            <input type="number" class="form-control" id="P" name="P" step="any" required>
+                            <small class="text-muted">Phosphorus content in soil (kg/ha)</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="K" class="form-label">Potassium (K)</label>
+                            <input type="number" class="form-control" id="K" name="K" step="any" required>
+                            <small class="text-muted">Potassium content in soil (kg/ha)</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="temperature" class="form-label">Temperature (°C)</label>
+                            <input type="number" class="form-control" id="temperature" name="temperature" step="any" required>
+                            <small class="text-muted">Average temperature</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="humidity" class="form-label">Humidity (%)</label>
+                            <input type="number" class="form-control" id="humidity" name="humidity" step="any" required>
+                            <small class="text-muted">Relative humidity percentage</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ph" class="form-label">pH Level</label>
+                            <input type="number" class="form-control" id="ph" name="ph" step="any" required>
+                            <small class="text-muted">Soil pH value (0-14)</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="rainfall" class="form-label">Rainfall (mm)</label>
+                            <input type="number" class="form-control" id="rainfall" name="rainfall" step="any" required>
+                            <small class="text-muted">Annual rainfall in millimeters</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                            <i class="fas fa-search"></i> Get Recommendation
+                        </button>
+                    </div>
+                </form>
+
+                <div id="loading" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing soil data...</p>
+                </div>
+
+                <div id="result" class="mt-4" style="display: none;">
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Recommended Crop</h5>
+                        <h3 class="mb-0" id="prediction"></h3>
+                    </div>
+                </div>
+
+                <div id="error" class="mt-4" style="display: none;">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> <span id="errorMsg"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- IMPORTANT: This was missing -->
+{% block extra_js %}
+<script>
+document.getElementById('cropForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+    
+    submitBtn.disabled = true;
+    loading.style.display = 'block';
+    result.style.display = 'none';
+    error.style.display = 'none';
+    
+    const formData = {
+        N: parseFloat(document.getElementById('N').value),
+        P: parseFloat(document.getElementById('P').value),
+        K: parseFloat(document.getElementById('K').value),
+        temperature: parseFloat(document.getElementById('temperature').value),
+        humidity: parseFloat(document.getElementById('humidity').value),
+        ph: parseFloat(document.getElementById('ph').value),
+        rainfall: parseFloat(document.getElementById('rainfall').value)
+    };
+    
+    try {
+        const response = await fetch('/predict-crop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const cropData = data.prediction;
+
+            document.getElementById('prediction').innerHTML = `
+                <strong>Crop:</strong> ${cropData.crop}<br>
+                <strong>Reason:</strong> ${cropData.reason}<br>
+                <strong>Additional Recommendations:</strong>
+                <ul>
+                    ${cropData.additional_recommendations.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            `;
+
+            result.style.display = 'block';
+        } else {
+            document.getElementById('errorMsg').textContent = data.error;
+            error.style.display = 'block';
+        }
+        
+    } catch (err) {
+        document.getElementById('errorMsg').textContent = 'Network error. Please try again.';
+        error.style.display = 'block';
+    } finally {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}
